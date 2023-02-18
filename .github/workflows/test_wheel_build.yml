@@ -160,7 +160,7 @@ jobs:
       - name: check downloaded
         run: |
           # ls dist
-          mv ./dist/**/simstring* ./dist/
+          mv ./dist/**/quickumls_simstring* ./dist/
           rm -rf dist/cp*
           # rm -rf dist/sdist
           ls -R
