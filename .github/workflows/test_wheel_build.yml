@@ -93,7 +93,7 @@ jobs:
           conda install -c conda-forge libiconv
           python --version
           python -m pip install --upgrade pip
-          python -m pip install cibuildwheel==2.12.0
+          python -m pip install wheel auditwheel
           python -m pip install --upgrade setuptools wheel auditwheel
           echo ${{ matrix.python-version[0] }}
           echo ${{ matrix.python-version[1] }}
@@ -104,17 +104,18 @@ jobs:
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
         run: |
           pwd
+          where python
           ls
-          python3 setup.py bdist_wheel
+          
+
+      - name: start build
+        run: |
+          python setup.py bdist_wheel
           ls dist
           ls wheelhouse
           auditwheel repair dist/*.whl
           ls dist
           ls wheelhouse
-
-      - name: check build
-        run: |
-          ls -l wheelhouse
 
 #   build_sdist:
 #     name: Build sdist
