@@ -131,10 +131,8 @@ jobs:
       - name: Build sdist
         run: |
           python setup.py sdist
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sdist
-          path: ./dist/*.tar.gz
+          ls dist
+
 
   upload_pypi:
     needs: [build_windows, build_sdist]
