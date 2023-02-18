@@ -90,6 +90,9 @@ jobs:
           
       - run: |
           conda install -c conda-forge libiconv
+          CPVERSION=${{ matrix.python-version }}
+          CPVERSION=${CPVERSION//.}
+          echo CPVERSION=${CPVERSION} >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.1
@@ -100,7 +103,7 @@ jobs:
           # This would require modifying cython's setup.py to look for these flags
           # in env vars.
           CIBW_BEFORE_BUILD: pip install -r requirements.txt
-          CIBW_BUILD: cp${{ matrix.python-version//. }}-${{ matrix.buildplat[1] }}
+          CIBW_BUILD: cp${{ env.CPVERSION }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
           CIBW_BEFORE_TEST: pip install pytest
           CIBW_TEST_COMMAND: pytest {package}/tests
