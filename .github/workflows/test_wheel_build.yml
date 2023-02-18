@@ -75,9 +75,9 @@ jobs:
         - [windows-2019, win_amd64]
         python-version: 
         - ["3.8", "cp38"]
-        - ["3.9", "cp39"]
-        - ["3.10", "cp310"]
-        - ["3.11", "cp311"]
+        # - ["3.9", "cp39"]
+        # - ["3.10", "cp310"]
+        # - ["3.11", "cp311"]
         
     steps:
       - name: Checkout
@@ -101,7 +101,9 @@ jobs:
         env:
           CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: |
+          which python
+          python -m cibuildwheel --output-dir wheelhouse
 
       - name: check build
         run: |
