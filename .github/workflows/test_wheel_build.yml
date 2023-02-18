@@ -94,6 +94,7 @@ jobs:
           python --version
           python -m pip install --upgrade pip
           python -m pip install cibuildwheel==2.12.0
+          python -m pip install --upgrade setuptools wheel auditwheel
           echo ${{ matrix.python-version[0] }}
           echo ${{ matrix.python-version[1] }}
 
@@ -102,56 +103,60 @@ jobs:
           CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
         run: |
-          which python
-          python -m cibuildwheel --output-dir wheelhouse
+          python3 setup.py bdist_wheel
+          ls dist
+          ls wheelhouse
+          auditwheel repair dist/*.whl
+          ls dist
+          ls wheelhouse
 
       - name: check build
         run: |
           ls -l wheelhouse
 
-  build_sdist:
-    name: Build sdist
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout quicksectx
-        uses: actions/checkout@v3
-      # Used to push the built wheels
-      - uses: actions/setup-python@v4
-        with:
-          # Build sdist on lowest supported Python
-          python-version: '3.8'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
+#   build_sdist:
+#     name: Build sdist
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout quicksectx
+#         uses: actions/checkout@v3
+#       # Used to push the built wheels
+#       - uses: actions/setup-python@v4
+#         with:
+#           # Build sdist on lowest supported Python
+#           python-version: '3.8'
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
       
-      - name: Build sdist
-        run: |
-          python setup.py sdist
-          ls dist
+#       - name: Build sdist
+#         run: |
+#           python setup.py sdist
+#           ls dist
 
 
-  upload_pypi:
-    needs: [build_windows, build_sdist]
-    runs-on: ubuntu-latest
-    # upload to PyPI on every tag starting with 'v'
-#    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    # alternatively, to publish when a GitHub Release is created, use the following rule:
-    # if: github.event_name == 'release' && github.event.action == 'published'
-    steps:
-      - uses: actions/setup-python@v4
-      - name: Install dependencies
-        run: |
-          pip install twine
+#   upload_pypi:
+#     needs: [build_windows, build_sdist]
+#     runs-on: ubuntu-latest
+#     # upload to PyPI on every tag starting with 'v'
+# #    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+#     # alternatively, to publish when a GitHub Release is created, use the following rule:
+#     # if: github.event_name == 'release' && github.event.action == 'published'
+#     steps:
+#       - uses: actions/setup-python@v4
+#       - name: Install dependencies
+#         run: |
+#           pip install twine
 
-      - uses: actions/download-artifact@v3
-        with:
-          path: dist
+#       - uses: actions/download-artifact@v3
+#         with:
+#           path: dist
 
-      - name: check downloaded
-        run: |
-          mv ./dist/**/simstring* ./dist/
-          rm -rf dist/cp*
-          rm -rf dist/sdist
-          ls -R
+#       - name: check downloaded
+#         run: |
+#           mv ./dist/**/simstring* ./dist/
+#           rm -rf dist/cp*
+#           rm -rf dist/sdist
+#           ls -R
 
 
