@@ -75,9 +75,9 @@ jobs:
         - [windows-2019, win_amd64]
         python-version: 
         - ["3.8", "cp38"]
-        # - ["3.9", "cp39"]
-        # - ["3.10", "cp310"]
-        # - ["3.11", "cp311"]
+        - ["3.9", "cp39"]
+        - ["3.10", "cp310"]
+        - ["3.11", "cp311"]
         
     steps:
       - name: Checkout
@@ -112,9 +112,7 @@ jobs:
         run: |
           python setup.py bdist_wheel
           ls dist
-          auditwheel repair dist/*.whl
-          ls dist
-          ls wheelhouse
+          
 
 #   build_sdist:
 #     name: Build sdist
