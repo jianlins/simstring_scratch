@@ -98,10 +98,7 @@ jobs:
           echo ${{ matrix.python-version[0] }}
           echo ${{ matrix.python-version[1] }}
 
-      - name: Build wheels
-        env:
-          CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
-          CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
+      - name: check env
         run: |
           pwd
           where python
@@ -109,10 +106,12 @@ jobs:
           
 
       - name: start build
+        env:
+          CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
+          CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
         run: |
           python setup.py bdist_wheel
           ls dist
-          ls wheelhouse
           auditwheel repair dist/*.whl
           ls dist
           ls wheelhouse
