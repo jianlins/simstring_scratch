@@ -73,7 +73,11 @@ jobs:
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
         - [windows-2019, win_amd64]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: 
+        - ["3.8", "cp38"]
+        - ["3.9", "cp39"]
+        - ["3.10", "cp310"]
+        - ["3.11", "cp311"]
         
     steps:
       - name: Checkout
@@ -86,13 +90,10 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: ${{ matrix.python-version }} 
+          python-version: ${{ matrix.python-version[0] }} 
           
       - run: |
           conda install -c conda-forge libiconv
-          CPVERSION=${{ matrix.python-version }}
-          CPVERSION=${CPVERSION//.}
-          echo CPVERSION=${CPVERSION} >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.1
@@ -103,7 +104,7 @@ jobs:
           # This would require modifying cython's setup.py to look for these flags
           # in env vars.
           CIBW_BEFORE_BUILD: pip install -r requirements.txt
-          CIBW_BUILD: cp${{ env.CPVERSION }}-${{ matrix.buildplat[1] }}
+          CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
           CIBW_BEFORE_TEST: pip install pytest
           CIBW_TEST_COMMAND: pytest {package}/tests
