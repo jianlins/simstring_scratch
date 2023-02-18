@@ -10,7 +10,6 @@ import re
 import os.path
 from distutils.core import setup, Extension
 from distutils.command.install_lib import install_lib as _install_lib
-from setuptools import find_packages, setup
 
 # PACKAGES = find_packages()
 
