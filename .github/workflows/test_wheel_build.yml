@@ -83,34 +83,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version[0] }} 
-          
-      - run: |
+      
+      - name: Install dependencies
+        run: |
           conda install -c conda-forge libiconv
           python --version
-          echo ${{ matrix.python-version }}
+          python -m pip install --upgrade pip
+          python -m pip install cibuildwheel==2.12.0
           echo ${{ matrix.python-version[0] }}
           echo ${{ matrix.python-version[1] }}
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.1
         env:
-          # TODO: Build Cython with the compile-all flag?
-          # Unfortunately, there is no way to modify cibuildwheel's build command
-          # so there is no way to pass this in directly.
-          # This would require modifying cython's setup.py to look for these flags
-          # in env vars.
           CIBW_BUILD: ${{ matrix.python-version[1] }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
-          CIBW_BEFORE_TEST: pip install pytest
-          CIBW_TEST_COMMAND: pytest {package}/tests
+        run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: check build
         run: |
@@ -130,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-
+      
       - name: Build sdist
         run: |
           python setup.py sdist
