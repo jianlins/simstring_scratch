@@ -7,7 +7,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_wheels:
+#   build_linux_mac:
+#     name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+#     if: >-
+#       github.event_name == 'schedule' ||
+#       github.event_name == 'workflow_dispatch' ||
+#       (github.event_name == 'pull_request' &&
+#       contains(github.event.pull_request.labels.*.name, 'Build System'))
+#     runs-on: ${{ matrix.buildplat[0] }}
+#     timeout-minutes: 50
+#     strategy:
+#       # Ensure that a wheel builder finishes even if another fails
+#       fail-fast: false
+#       matrix:
+#         # Github Actions doesn't support pairing matrix values together, let's improvise
+#         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
+#         buildplat:
+#         - [ubuntu-20.04, manylinux_x86_64]
+#         - [ubuntu-20.04, musllinux_x86_64]
+#         - [macos-10.15, macosx_*]
+#         # - [windows-2019, win32]
+# #        spacy doesn't compile win32
+# #        python: ["cp37"] # Note: Wheels not needed for PyPy
+#         python: ["cp36", "cp37", "cp38", "cp39", "cp310","cp311"] # Note: Wheels not needed for PyPy
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+
+#       - name: Install dependencies
+#         run: |
+#           python3 -m pip install --upgrade pip
+
+#       - name: Build wheels
+#         uses: pypa/cibuildwheel@v2.11.1
+#         env:
+#           # TODO: Build Cython with the compile-all flag?
+#           # Unfortunately, there is no way to modify cibuildwheel's build command
+#           # so there is no way to pass this in directly.
+#           # This would require modifying cython's setup.py to look for these flags
+#           # in env vars.
+#           CIBW_BEFORE_BUILD: pip install -r requirements.txt
+#           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+#           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
+#           CIBW_BEFORE_TEST: pip install pytest
+#           CIBW_TEST_COMMAND: pytest {package}/tests
+
+#       - name: check build
+#         run: |
+#           ls -l wheelhouse
+          
+  build_windows:
     name: Build wheel for ${{ matrix.python }}-${{ matrix.buildplat[1] }}
     if: >-
       github.event_name == 'schedule' ||
@@ -23,14 +72,9 @@ jobs:
         # Github Actions doesn't support pairing matrix values together, let's improvise
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
-        - [ubuntu-20.04, manylinux_x86_64]
-        - [ubuntu-20.04, musllinux_x86_64]
-        - [macos-10.15, macosx_*]
         - [windows-2019, win_amd64]
-        # - [windows-2019, win32]
-#        spacy doesn't compile win32
-#        python: ["cp37"] # Note: Wheels not needed for PyPy
-        python: ["cp36", "cp37", "cp38", "cp39", "cp310","cp311"] # Note: Wheels not needed for PyPy
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,6 +82,14 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }} 
+
+      - run: |
+        conda install -c conda-forge libiconv
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.1
@@ -48,7 +100,7 @@ jobs:
           # This would require modifying cython's setup.py to look for these flags
           # in env vars.
           CIBW_BEFORE_BUILD: pip install -r requirements.txt
-          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+          CIBW_BUILD: cp${{ matrix.python-version//. }}-${{ matrix.buildplat[1] }}
           CIBW_ENVIRONMENT: CFLAGS='-O3 -g0 -mtune=generic -pipe -fPIC' LDFLAGS='-fPIC'
           CIBW_BEFORE_TEST: pip install pytest
           CIBW_TEST_COMMAND: pytest {package}/tests
@@ -56,8 +108,6 @@ jobs:
       - name: check build
         run: |
           ls -l wheelhouse
-          
-
 
   build_sdist:
     name: Build sdist
